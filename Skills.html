@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TalentSwap - Smart Chat</title>
+
+<link rel="icon" href="favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    font-family:'Inter',sans-serif;
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background: linear-gradient(135deg,#d7eadf,#f1f7f3);
+    color:#2b3a3f;
+}
+
+/* glow background */
+body::before, body::after{
+    content:"";
+    position:fixed;
+    width:400px;
+    height:400px;
+    border-radius:50%;
+    filter:blur(120px);
+    z-index:-1;
+}
+
+body::before{
+    background:#8fbfa3;
+    top:-120px;
+    left:-120px;
+}
+
+body::after{
+    background:#cfe8d8;
+    bottom:-120px;
+    right:-120px;
+}
+
+.header{
+    text-align:center;
+    padding:50px 20px 10px;
+}
+
+h1{
+    font-size:48px;
+    margin:0;
+    color:#2f4f3f;
+}
+
+.search{
+    margin-top:15px;
+    padding:14px 18px;
+    width:280px;
+    border:none;
+    border-radius:30px;
+    outline:none;
+}
+
+.btn{
+    background:#5f8f76;
+    color:white;
+    border:none;
+    padding:14px 40px;
+    border-radius:30px;
+    margin-top:15px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+/* cards */
+#peopleContainer{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:20px;
+    padding:30px;
+    max-width:1100px;
+    margin:auto;
+}
+
+.skill-box{
+    background:rgba(240,255,245,0.6);
+    backdrop-filter:blur(15px);
+    border-radius:20px;
+    padding:16px;
+    display:flex;
+    gap:15px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.skill-box:hover{
+    transform:scale(1.02);
+}
+
+.skill-photo{
+    width:70px;
+    height:70px;
+    border-radius:18px;
+}
+
+/* CHAT */
+.chat-popup{
+    display:none;
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    width:340px;
+    background:rgba(255,255,255,0.95);
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
+}
+
+.chat-header{
+    background:linear-gradient(135deg,#5f8f76,#9ccbb0);
+    color:white;
+    padding:12px;
+    display:flex;
+    justify-content:space-between;
+}
+
+.chat-body{
+    height:260px;
+    padding:10px;
+    overflow-y:auto;
+}
+
+.chat-input{
+    width:100%;
+    border:none;
+    padding:12px;
+    outline:none;
+}
+
+/* feedback button */
+.feedback-btn{
+    position:fixed;
+    top:20px;
+    right:20px;
+    background:#5f8f76;
+    color:white;
+    padding:12px 20px;
+    border-radius:20px;
+    text-decoration:none;
+    font-weight:600;
+    z-index:1000;
+}
+
+.feedback-btn:hover{
+    transform:scale(1.05);
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- FEEDBACK -->
+<a href="feedback.html" class="feedback-btn">Feedback</a>
+
+<div class="header">
+<h1>TalentSwap</h1>
+<p>Talentswap chat</p>
+
+<input class="search" id="search" placeholder="Search skills...">
+<button class="btn" onclick="startLearning()">Start Learning</button>
+</div>
+
+<div id="peopleContainer"></div>
+
+<!-- CHAT -->
+<div class="chat-popup" id="chatPopup">
+  <div class="chat-header">
+    <span id="chatName"></span>
+    <span onclick="closeChat()">✖</span>
+  </div>
+
+  <div class="chat-body" id="chatBody"></div>
+
+  <input id="chatInput" class="chat-input"
+  placeholder="Type message..."
+  onkeydown="if(event.key==='Enter'){sendMessage()}">
+</div>
+
+<script>
+
+/* ================= DATA ================= */
+const skills = ["math","art","music","coding","painting","guitar","piano","photography"];
+const names = ["Emma","Lily","Noah","Mia","Ethan","Ava","Leo","Zoe"];
+
+const people = [];
+
+for(let i = 0; i < 120; i++){
+    people.push({
+        name: names[Math.floor(Math.random() * names.length)] + " " + (i + 1),
+        teaches: skills[Math.floor(Math.random() * skills.length)],
+        learns: skills[Math.floor(Math.random() * skills.length)],
+        photo: "https://picsum.photos/80?random=" + i
+    });
+}
+
+/* ================= STATE ================= */
+let currentPerson = null;
+let memorySkill = "";
+
+/* ================= RENDER ================= */
+function render(list){
+    const c = document.getElementById("peopleContainer");
+    c.innerHTML = "";
+
+    list.forEach(p=>{
+        const div = document.createElement("div");
+        div.className = "skill-box";
+
+        div.innerHTML = `
+        <img src="${p.photo}" class="skill-photo">
+        <div>
+        <b>${p.name}</b><br>
+        <small>Teaches ${p.teaches} • Wants ${p.learns}</small>
+        </div>
+        `;
+
+        div.onclick = ()=>openChat(p);
+        c.appendChild(div);
+    });
+}
+
+function startLearning(){
+    render(people);
+}
+
+/* ================= SEARCH ================= */
+document.getElementById("search").addEventListener("input",function(){
+    const v = this.value.toLowerCase();
+    render(people.filter(p=>
+        p.name.toLowerCase().includes(v) ||
+        p.teaches.includes(v) ||
+        p.learns.includes(v)
+    ));
+});
+
+/* ================= CHAT ================= */
+function openChat(p){
+    currentPerson = p;
+    memorySkill = p.teaches;
+
+    document.getElementById("chatName").innerText = p.name;
+    document.getElementById("chatBody").innerHTML =
+    `<p>Hi! I can teach ${p.teaches} 😊</p>`;
+
+    document.getElementById("chatPopup").style.display = "block";
+}
+
+function closeChat(){
+    document.getElementById("chatPopup").style.display = "none";
+}
+
+/* ================= SEND ================= */
+function sendMessage(){
+    const input = document.getElementById("chatInput");
+    const msg = input.value.trim();
+    if(!msg) return;
+
+    const body = document.getElementById("chatBody");
+
+    body.innerHTML += `<p><b>You:</b> ${msg}</p>`;
+    input.value = "";
+
+    setTimeout(()=>reply(msg, body), 400);
+}
+
+/* ================= AI ================= */
+function reply(msg, body){
+
+    let lower = msg.toLowerCase();
+    let response = "";
+
+    if(/hi|hello|hey/.test(lower)){
+        const r = [
+            "Hey! 😊",
+            "Hi there!",
+            "Hello! 👋",
+            "Heyy! 🚀",
+            "Hi! Ready?"
+        ];
+        response = random(r);
+    }
+
+    else if(lower.includes("can you teach me")){
+        const r = [
+            `Of course! I can teach you ${memorySkill} 👍`,
+            `Yes! Let’s learn ${memorySkill} together 😊`,
+            `Absolutely! I’ll guide you in ${memorySkill} 💡`,
+            `Sure! ${memorySkill} is easy 🚀`,
+            `Yes! i would love to help learn that✨`
+        ];
+        response = random(r);
+    }
+
+    else if(lower.includes("i can teach you")){
+        const r = [
+            "Yes please i would love to learn that🤩",
+            "Yes please!",
+            "Let’s exchange skills 😄",
+            "Cool! Teach me 🚀",
+            "Really!I would love that ✨"
+        ];
+        response = random(r);
+    }
+
+    else if(lower.includes("i want to learn")){
+        const r = [
+            `Nice! i can help you learn  ${memorySkill} 💡`,
+            `I can definitely help you👍`,
+            `Awesome! I’ll help you`,
+            `Perfect! Let’s start 🚀`
+        ];
+        response = random(r);
+    }
+
+    else if(lower.includes("thanks")){
+        const r = [
+            "You’re welcome 😊",
+            "No problem 👍",
+            "Anytime!",
+            "Glad to help!",
+            "Of course 😄"
+        ];
+        response = random(r);
+    }
+
+    else{
+        const r = [
+            "Interesting 👀",
+            "Tell me more!",
+            "Nice idea 💡",
+            "Let’s try that!",
+            "Cool 👍"
+        ];
+        response = random(r);
+    }
+
+    body.innerHTML += `<p><b>${currentPerson ? currentPerson.name : "Bot"}:</b> ${response}</p>`;
+    body.scrollTop = body.scrollHeight;
+}
+
+/* ================= RANDOM ================= */
+function random(arr){
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+</script>
+
+</body>
+</html>

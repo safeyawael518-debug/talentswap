@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TalentSwap - Enter</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+* {
+    font-family: 'Inter', sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body {
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(135deg,#6c8f7b,#a7c7d7);
+}
+
+/* LOGIN BOX */
+.box {
+    background:white;
+    width:340px;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 15px 30px rgba(0,0,0,0.2);
+    text-align:center;
+    animation:pop 0.3s ease;
+}
+
+@keyframes pop {
+    from {transform:scale(0.8); opacity:0;}
+    to {transform:scale(1); opacity:1;}
+}
+
+h1 {
+    color:#6c8f7b;
+    margin-bottom:10px;
+}
+
+p {
+    font-size:14px;
+    color:#666;
+    margin-bottom:20px;
+}
+
+/* INPUTS */
+input {
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:1px solid #ddd;
+    border-radius:12px;
+    outline:none;
+}
+
+/* BUTTON */
+button {
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    border:none;
+    border-radius:12px;
+    background:#6c8f7b;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover {
+    transform:scale(1.03);
+}
+
+.error {
+    color:red;
+    font-size:13px;
+    margin-top:10px;
+    display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="box">
+    <h1>TalentSwap</h1>
+    <p>Enter your details to continue</p>
+
+    <input type="text" id="firstName" placeholder="First Name">
+    <input type="text" id="lastName" placeholder="Last Name">
+
+    <button onclick="enterApp()">Start</button>
+
+    <div class="error" id="error">
+        Please fill in both fields.
+    </div>
+</div>
+
+<script>
+
+function enterApp(){
+
+    let first = document.getElementById("firstName").value.trim();
+    let last = document.getElementById("lastName").value.trim();
+
+    if(first === "" || last === ""){
+        document.getElementById("error").style.display = "block";
+        return;
+    }
+
+    localStorage.setItem("user", first + " " + last);
+
+    window.location.href = "home.html"; // your homepage
+}
+
+</script>
+
+</body>
+</html>
